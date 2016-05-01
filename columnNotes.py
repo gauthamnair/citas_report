@@ -1,0 +1,20 @@
+{'AF', # author full name when available
+ 'AU', # author with initials.
+ 'CR',
+ 'DT',
+ 'GA',
+ 'LA',
+ 'NR',
+ 'PA',
+ 'PG',
+ 'PI',
+ 'PT',
+ 'PU',
+ 'PY',
+ 'SO',
+ 'TC',
+ 'TI',
+ 'U1',
+ 'U2',
+ 'UT',
+ 'Z9'}

@@ -50,7 +50,7 @@ def readCiting():
 	return chunkBySeparator(res, isIgnoredOrSeparatorLine)
 
 def readPapers():
-	fileName = "data/papers_with_references.txt"
+	fileName = "data/papers_time_sorted.txt"
 	res = [x.rstrip("\n") for x in open(fileName) if x.strip() != ""]
 	return chunkBySeparator(res, isIgnoredOrSeparatorLine)
 
@@ -226,6 +226,57 @@ citationCountByUID = {uid:len(rs) for (uid, rs) in citationsByUID.items()}
 print(sum(len(rs) for rs in citationsByUID.values()))
 # def crMatcherByJ9(cr, papersByUID):
 
+
+def renderPaper(p):
+	parts = []
+	parts.append("; ".join(p["AU"]) + ":")
+	parts.append(" ".join(p["TI"]) + ",")
+	if "J9" and "VL" in p:
+		parts.append(", ".join(p["J9"]))
+		parts.append(p["VL"][0])
+	elif "SO" in p:
+		# this one is untested!
+		parts.append(", ".join(p["SO"]))
+	parts.append("(" + p["PY"][0] + ")")
+	if "BP" in p:
+		parts.append("p." + p["BP"][0])
+	if "DI" in p:
+		parts.append(p["DI"][0])
+	return " ".join(parts)
+
+countByYear = {}
+for p in papers:
+	uid = getUID(p)
+	citations = citationsByUID.get(uid, [])
+	for cr in citations:
+		countByYear[cr["PY"][0]] = countByYear.get(cr["PY"][0], 0) + 1
+
+
+outLines = []
+outLines.append(u"PK Nair UNAM")
+outLines.append("citas anuales, sin auto-citas:")
+for (year, citations) in reversed(sorted(list(countByYear.items()), key = lambda x: int(x[0]))):
+	outLines.append(year + "\t" + str(citations))
+
+outLines.append("")
+for p in papers:
+	outLines.append("__________________________________________")
+	uid = getUID(p)
+	assert(uid != None)
+	outLines.append(renderPaper(p))
+	citedBy = list(reversed(sorted(citationsByUID.get(uid, []), key = lambda x : x["PY"])))
+	outLines.append("")
+	outLines.append("Fue citado por: " + str(len(citedBy)))
+	reverseCitationNumber = reversed([x+1 for x in range(len(citedBy))])
+	for (citingP, num) in zip(citedBy, reverseCitationNumber):
+		outLines.append("Cita " + str(num) + ":\t" + renderPaper(citingP))
+	outLines.append("")
+	outLines.append("")
+
+import io
+
+with io.open("data/out.txt", "w", newline="\r\n") as f:
+	f.writelines(unicode(l + "\n") for l in outLines)
 
 
 
